@@ -27,6 +27,7 @@ A 3D digital twin of Heilbronn that learns from real radio data and finds the fe
 <!-- VIDEO PLAYER: when editing this file on github.com, put the cursor on the empty line below and
      drag docs/media/demo.mp4 into the editor. GitHub uploads it and inserts a link that plays right here. -->
 
+https://github.com/user-attachments/assets/f3542c76-2afe-4cbf-9deb-2434fc6b096e
 
 <div align="center">
 
