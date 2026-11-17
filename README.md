@@ -24,11 +24,15 @@ A 3D digital twin of Heilbronn that learns from real radio data and finds the fe
 
 ## 🎬 See it in action
 
+<!-- VIDEO PLAYER: when editing this file on github.com, put the cursor on the empty line below and
+     drag docs/media/demo.mp4 into the editor. GitHub uploads it and inserts a link that plays right here. -->
+
+
 <div align="center">
 
 <a href="docs/media/demo.mp4"><img src="docs/media/demo.gif" alt="Demo: Heilbronn turns from red to green with 27 gateways, backup when one fails, the future city, and Stuttgart" width="100%"></a>
 
-<sub>Preview at 4× speed. ▶ <a href="docs/media/demo.mp4"><b>Watch the full 68-second demo video</b></a> · 🌐 <a href="https://lorawan-gateway-planner.netlify.app/"><b>Try the live planner</b></a></sub>
+<sub>Quick preview at 4× speed · ▶ <a href="docs/media/demo.mp4"><b>Open the video file</b></a> · 🌐 <a href="https://lorawan-gateway-planner.netlify.app/"><b>Try the live planner</b></a></sub>
 
 </div>
 
