@@ -1,0 +1,29 @@
+# ---------------------------------------------------------------------------
+# What is NOT published to GitHub
+# ---------------------------------------------------------------------------
+
+# Dotfiles and tool folders (only this .gitignore is published)
+.*
+!.gitignore
+
+# Notes for the coding assistant (local only)
+CLAUDE.md
+
+# Python environment and caches
+__pycache__/
+*.pyc
+.venv/
+
+# Data: raw downloads (LGL open data, HNVG meter and radio data) and everything generated from it.
+# The HNVG meter data must not be published without HNVG's approval.
+data/
+web/data/
+cities/*/raw/
+cities/*/processed/
+cities/*/web_data/
+
+# Large media and presentations – the README uses the small copies in docs/media/
+docs/*
+!docs/media/
+*.pptx
+*.mp3

@@ -1,0 +1,129 @@
+# HN LoRaWAN Planner – configuration
+# Put ALL downloaded files (zips or extracted folders, any names) into paths.raw.
+# The data selector picks only the files listed under `datasets` and ignores everything else.
+
+paths:
+  raw: data/raw              # input folder (zips / folders / csv) – scanned recursively
+  processed: data/processed  # cached intermediate results
+  web_data: web/data         # compact files consumed by the browser app
+
+crs: EPSG:25832              # ETRS89 / UTM 32N (all LGL data uses this)
+
+datasets:
+  # ---- challenge data (HNVG) -------------------------------------------------
+  transmissions:     {pattern: 'transmission[_ ]?data\.csv$', required: true}
+  transmitter_meta:  {pattern: 'transmitter[_ ]?meta[_ ]?data\.csv$', required: true}
+  mapping:           {pattern: 'mapping[_ ]?transmitter[_ ]?id\.csv$', required: true}
+  gateway_meta:      {pattern: 'gateway[_ ]?meta[_ ]?data\.csv$', required: true}
+  candidates:        {pattern: 'potential[_ ]?gw[_ ]?location\.csv$', required: true}
+  addresses:         {pattern: 'hn[_ ]?adresses\.csv$', required: true}
+  # ---- LGL Open GeoData --------------------------------------------------------
+  alkis_buildings:   {pattern: '(^|/)gebaeudeBauwerke\.shp$', required: true, multi: true}
+  alkis_landuse:     {pattern: '(^|/)nutzung\.shp$', required: false, multi: true}
+  lod_gml:           {pattern: 'LoD[12]_32_\d+_\d+_1_BW\.gml$', required: true, multi: true}
+  dom1:              {pattern: 'dom1_32_\d+_\d+_1_bw(_\d{4})?\.tif$', required: true, multi: true}
+  dgm1:              {pattern: 'dgm1_32_\d+_\d+_1_bw(_\d{4})?\.(tif|xyz)$', required: false, multi: true}
+  dop20:             {pattern: 'dop20rgbi_32_\d+_\d+_1_bw(_\d{4})?\.tif$', required: false, multi: true}  # orthophotos RGB + infrared -> tree canopy
+  house_coords:      {pattern: '(^|/)adressen-bw\.txt$', required: false}                # Hauskoordinaten (hk_bw.zip)
+  dlm:               {pattern: '(^|/)(veg02_f|veg03_f|gew01_f)\.shp$', required: false, multi: true}  # Basis-DLM: forest, woodland, water
+  # ---- HNVG / Stadtwerke Heilbronn documents (put them in data/raw/hnvg_docs/) -----
+  # exact document names only – all other website PDFs (gas, heat, tariffs, forms) are ignored
+  tab_wasser:           {pattern: '(^|[-_ /])tab[-_ ]?wasser\.pdf$', required: false}
+  water_conditions:     {pattern: 'erg(ae|ä)nzende[-_ ]bedingungen[-_ ]avb[-_ ]?wasserv\.pdf$', required: false}
+  water_service_prices: {pattern: 'montagepreise[-_ ]wasserversorgung.*\.pdf$', required: false}
+  water_tariff:         {pattern: 'preisblatt[-_ ]avb[-_ ]?wasserv\.pdf$', required: false}
+  # ---- optional enrichment -------------------------------------------------------
+  weather:           {pattern: '(open[-_]?meteo|weather).*\.csv$', required: false}
+  # ---- future city: official spatial plans (XPlanGML from geoportal-raumordnung-bw.de) -------
+  # FP = Flächennutzungsplan, RP = Regionalplan, BP = Bebauungsplan, SO = sonstige Pläne
+  xplan:             {pattern: 'xplan[^/]*\.gml$', required: false, multi: true}
+
+radio:
+  frequency_mhz: 868.1
+  rx_height_m: 1.0           # assumed meter / end-device height above terrain
+  # gateway mounting (exact points unknown): top-level surface, preferably a building roof – see sites.py
+  mast_m: 2.0                # antenna above the roof / structure top
+  roof_search_radius_m: 30   # tallest building within this radius = mounting roof (LoD height, chimneys ignored)
+  site_search_radius_m: 15   # no building: non-tree structure (tower, mast) within this radius
+  structure_min_m: 8         #   … counts if taller than this above ground
+  free_mast_m: 10            # nothing to mount on: free-standing pole of this height
+  max_range_m: 8000          # links longer than this are treated as "no reception"
+  device_radius_m: 300       # challenge provider: conservative assumption – reception often reaches further
+  # link budget (public specs; used for the "excess loss" analysis and the signal legend)
+  device_tx_dbm: 14          # meter LoRaWAN module, 25 mW (Apator IN-LWAN datasheet)
+  gateway_antenna_dbi: 2     # ASSUMPTION – external antenna type/gain not published, ask HNVG
+  gateway_sensitivity_dbm: -141  # Kerlink Wirnet iStation 868, SF12 / 125 kHz (Kerlink leaflet)
+
+# Hardware in the Heilbronn network (public sources only – the Kerlink PDF from HNVG is confidential)
+hardware:
+  gateway:
+    model: Kerlink Wirnet iStation 868 (8 channels, 4G/Ethernet backhaul)
+    rx_sensitivity_dbm_sf12: -141
+    tx_power_dbm: "5–27 (configurable)"
+    antenna: external, N connector (type and gain not published)
+    mounting: wall or pole bracket
+  # meter manufacturer = the 3 letters after the first digit of the meter number (8 = water),
+  # e.g. 8APA0000000001 -> APA. Shares and reception are taken from the measured week.
+  meters:
+    IMT: {name: "IMT (manufacturer not confirmed – possibly INTEGRA Metering)", radio: "LoRaWAN, details not published"}
+    APA: {name: "Apator", radio: "LoRaWAN module 25 mW, internal antenna (external 3 m antenna variant for meter pits)"}
+    AXI: {name: "Axioma Metering (likely, Qalcosonic W1)", radio: "LoRaWAN Class A, EU868"}
+
+# Future city scenario (src/hnplan/future.py): designated building land that is still unbuilt today
+future:
+  greenfield_classes: [Landwirtschaft, Unland Vegetationslose Flaeche]  # ALKIS use = still unbuilt
+  gap_m: 25                  # at least this far from any existing building (streets/gardens don't count)
+  min_area_m2: 3000          # smaller gaps are ignored
+  height_quantile: 0.9       # worst case: as tall as the tallest 10 % of today's buildings of the same use nearby
+  site_keep_out_m: 20        # no future building on top of a gateway site
+
+# Landmarks shown when the 3D app opens (first `seconds`, then the normal map). Site = the ALKIS land-use parcel at `point`.
+landmarks:
+  - name: Hochschule Heilbronn
+    sub: Campus Sontheim · Max-Planck-Straße 39
+    point: [9.2105, 49.1225]          # lon, lat
+    color: "#354e91"                  # HHN blue (--blue on hs-heilbronn.de)
+    seconds: 5
+
+grid:
+  raster_res_m: 5            # resolution of surface/terrain/building rasters used for line of sight
+  cell_size_m: 50            # address aggregation cell size for the planner
+  profile_step_m: 5          # sampling step along a radio path (auto-coarsened for long paths)
+  profile_max_samples: 400
+  endpoint_clearance_m: 12   # ignore the first/last metres (own building / mounting structure)
+
+model:
+  kind: auto                 # auto | catboost | gbm | mlp   (auto = lowest leave-one-gateway-out log-loss)
+  ensemble_size: 7           # bootstrap models -> mean probability + uncertainty
+  random_state: 42
+  covered_threshold: 0.5     # P(reception) above which a link counts as "covered" in summaries
+
+optimizer:
+  default_k: 3
+  objective: coverage        # coverage | redundancy
+
+# Water-meter facts. Values are READ FROM THE HNVG DOCUMENTS when present (see hnplan/hnvg_docs.py);
+# these defaults are only used if a document is missing.
+domain:
+  shaft_pipe_length_m: 40        # Ergänzende Bedingungen AVBWasserV, Ziff. 4
+  remote_reading_allowed: true   # Ergänzende Bedingungen AVBWasserV, Ziff. 9.2
+  manual_reading_annual: true    # Ergänzende Bedingungen AVBWasserV, Ziff. 11.1
+  meter_at_house_entry: true     # TAB Wasser, Wasserzählerplatz (Legende 3)
+  connection_shortest_path: true # TAB Wasser, Ziff. 3
+  meter_min_height_mm: 600       # TAB Wasser, Legende 10
+  visit_cost_eur_net: 92.0       # Montagepreise Wasserversorgung, 2a
+  visit_cost_shaft_eur_net: 178.0  # Montagepreise Wasserversorgung, 2b
+  water_price_eur_m3_net: 2.99   # Preisblatt AVBWasserV
+
+meter_placement:
+  enabled: true                  # compute street-facing wall position, setback and shaft flag
+  use_for_model: false           # ablation: wall position gave no reliable gain -> model uses address point
+  shaft_p_factor: 0.5            # ASSUMPTION (no shaft meter in the measured data): an underground shaft
+                                 # halves the reception probability. Set 1.0 to switch the penalty off.
+  road_classes: [Strassenverkehr, Weg, Platz]
+  snap_radius_m: 20              # max distance from an address/meter point to its building
+  inset_m: 1.0                   # move the meter 1 m inside the wall (it hangs on the inside)
+
+weather:
+  latitude: 49.1427
+  longitude: 9.2109

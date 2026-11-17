@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Heilbronn LoRaWAN Planner</title>
+<meta name="description" content="Gateway siting for radio-read water meters in Heilbronn – predicted coverage, provider 300 m rule and 3D city model.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="vendor/maplibre-gl.css">
+<link rel="stylesheet" href="style.css?v=20261115p">
+</head>
+<body>
+<div id="map" aria-label="3D map of Heilbronn"></div>
+
+<aside id="panel" class="panel" aria-label="Planner controls">
+  <header class="brand">
+    <svg class="logo" viewBox="0 0 32 32" aria-hidden="true">
+      <rect width="32" height="32" rx="8" fill="var(--accent)"/>
+      <path d="M16 23v-7" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/>
+      <circle cx="16" cy="13.5" r="2.4" fill="#fff"/>
+      <path d="M11.2 9.2a6.6 6.6 0 0 0 0 8.6M20.8 9.2a6.6 6.6 0 0 1 0 8.6" stroke="#fff" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+    </svg>
+    <div>
+      <h1>Heilbronn LoRaWAN Planner</h1>
+      <p>Gateway siting for radio-read water meters</p>
+    </div>
+    <a class="data-link" href="data.html" title="All numbers as tables – sites, plan, model, measurements">Data ↗</a>
+  </header>
+
+  <section class="kpis" aria-live="polite">
+    <div class="kpi-main">
+      <div class="kpi-label">Addresses covered <span class="hint-dot" title="Expected share of the 23k addresses whose basement meter is heard by at least one gateway (model prediction).">?</span></div>
+      <div class="kpi-row"><span class="kpi-value" id="s-cov">–</span><span class="delta" id="d-cov"></span></div>
+      <div class="meter" aria-hidden="true"><span class="meter-base" id="m-base"></span><span class="meter-now" id="m-now"></span></div>
+    </div>
+    <div class="kpi-grid">
+      <div class="kpi"><div class="kpi-label">Backup ≥ 2</div><div class="kpi-small" id="s-red">–</div><div class="delta" id="d-red"></div></div>
+      <div class="kpi"><div class="kpi-label" id="l-rad">Within 300 m</div><div class="kpi-small" id="s-rad">–</div><div class="delta" id="d-rad"></div></div>
+      <div class="kpi"><div class="kpi-label">In gaps</div><div class="kpi-small" id="s-gap">–</div><div class="delta" id="d-gap"></div></div>
+    </div>
+    <div class="value" id="value-line" title="Reference: HNVG price of a manual check reading – €92 net, €178 for a meter in a shaft (Montagepreise Wasserversorgung 2026)"></div>
+  </section>
+
+  <section class="card">
+    <h2>Plan new gateways</h2>
+    <div id="scen-box" hidden>
+      <div class="field-label">City</div>
+      <div class="seg seg2" id="scen" role="radiogroup" aria-label="City scenario">
+        <button role="radio" data-scen="today" class="on">Today</button>
+        <button role="radio" data-scen="future">Future city <span class="new-tag">plans</span></button>
+      </div>
+      <p class="goal-hint" id="scen-hint"></p>
+    </div>
+    <div class="field-label">Plan for meter type</div>
+    <div class="seg seg2" id="device" role="radiogroup" aria-label="Meter type">
+      <button role="radio" data-dev="mix" class="on">Today's mix</button>
+      <button role="radio" data-dev="weak" id="dev-weak">Weakest type</button>
+    </div>
+    <p class="goal-hint" id="device-hint"></p>
+    <div class="tabs" id="plan-mode" role="tablist" aria-label="Planning mode">
+      <button role="tab" data-pm="target" class="on">Coverage target</button>
+      <button role="tab" data-pm="fixed">Fixed number</button>
+    </div>
+
+    <div id="pm-target">
+      <div class="target-row"><span class="field-label">Target coverage</span><output id="t-out">98.0 %</output></div>
+      <input type="range" id="target" min="60" max="99" step="0.1" value="98" aria-label="Target coverage">
+      <div class="target-scale"><span>60 %</span><span id="t-max"></span></div>
+      <svg id="curve" class="curve" viewBox="0 0 320 132" role="img" aria-label="Coverage versus number of new gateways"></svg>
+      <p class="goal-hint" id="target-hint"></p>
+    </div>
+
+    <div id="pm-fixed" hidden>
+      <div class="field-label">Goal</div>
+      <div class="goal-grid" id="goal" role="radiogroup" aria-label="Planning goal">
+        <button role="radio" data-goal="coverage" class="on">Max coverage</button>
+        <button role="radio" data-goal="radius">300 m rule</button>
+        <button role="radio" data-goal="robust">Confident only</button>
+        <button role="radio" data-goal="redundancy">With backup</button>
+      </div>
+      <p class="goal-hint" id="goal-hint"></p>
+      <div class="stepper-row">
+        <span class="field-label">New sites</span>
+        <div class="stepper">
+          <button id="k-minus" aria-label="Fewer sites">−</button>
+          <output id="k-out">3</output>
+          <button id="k-plus" aria-label="More sites">+</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="actions">
+      <button id="btn-opt" class="btn-primary">Find minimum sites</button>
+      <button id="btn-reset" class="btn-ghost">Reset</button>
+    </div>
+    <div class="plan-summary" id="plan-summary" hidden></div>
+    <div class="future-check" id="future-check" hidden></div>
+    <ol id="plan-list" class="results"></ol>
+    <p class="empty" id="plan-empty">Set a coverage target and find the fewest approved sites that reach it – or click a grey candidate on the map to test a site.</p>
+  </section>
+
+  <section class="card">
+    <h2>Map layers</h2>
+    <div class="switches">
+      <label class="switch"><input type="checkbox" data-t="showCov" checked><span class="track"></span><span class="sw-label">New-site coverage</span></label>
+      <label class="switch"><input type="checkbox" data-t="showCand" checked><span class="track"></span><span class="sw-label">Candidate sites</span></label>
+      <label class="switch"><input type="checkbox" data-t="showExist" checked><span class="track"></span><span class="sw-label">Existing gateways</span></label>
+      <label class="switch"><input type="checkbox" data-t="showMet"><span class="track"></span><span class="sw-label">Measured meters</span></label>
+      <label class="switch"><input type="checkbox" data-t="showB" checked><span class="track"></span><span class="sw-label">3D buildings</span></label>
+      <label class="switch" id="sw-aer"><input type="checkbox" data-t="showAer"><span class="track"></span><span class="sw-label">Aerial imagery</span></label>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>Building colour</h2>
+    <div class="seg" id="mode" role="radiogroup" aria-label="Colour buildings by">
+      <button role="radio" data-mode="cov" class="on">Reception</button>
+      <button role="radio" data-mode="red">Backup</button>
+      <button role="radio" data-mode="rssi">Signal</button>
+      <button role="radio" data-mode="unc">Certainty</button>
+      <button role="radio" data-mode="real">Neutral</button>
+    </div>
+    <div id="legend" class="legend"></div>
+  </section>
+
+  <footer class="panel-foot">
+    <div class="foot-links">
+      <a class="btn-link" href="data.html">Data &amp; evidence tables <span aria-hidden="true">→</span></a>
+      <button id="btn-why" class="btn-link">Methodology <span aria-hidden="true">→</span></button>
+    </div>
+    <p class="credits">Geodata: LGL Baden-Württemberg (dl-de/by-2-0) · Reception data &amp; documents: HNVG · Basemap © CARTO © OpenStreetMap</p>
+  </footer>
+</aside>
+
+<div class="map-key" id="map-key" aria-label="Map key">
+  <div class="mk-row"><img id="mk-new" alt=""><span>New gateway</span></div>
+  <div class="mk-row"><img id="mk-exist" alt=""><span>Existing gateway</span></div>
+  <div class="mk-row"><img id="mk-cand" alt=""><span>Candidate site</span></div>
+  <div class="mk-row"><span class="mk-ring"></span><span id="mk-rad">300 m device radius</span></div>
+  <div class="mk-row"><span class="mk-reach"></span><span>Model reach ≥ 50 %</span></div>
+  <div class="mk-row" id="mk-fut" hidden><span class="mk-future"></span><span>Planned building land</span></div>
+</div>
+
+<div id="tooltip" class="tooltip" role="tooltip" hidden></div>
+
+<div id="loading" class="loading">
+  <div class="loading-inner">
+    <div class="spinner" aria-hidden="true"></div>
+    <div class="loading-title">Heilbronn LoRaWAN Planner</div>
+    <div class="loading-step" id="loading-step">Loading city model…</div>
+  </div>
+</div>
+
+<div id="why" class="drawer" hidden role="dialog" aria-label="Methodology and evidence">
+  <button class="drawer-close" id="why-close" aria-label="Close">×</button>
+  <div id="why-body"></div>
+</div>
+
+<script src="vendor/maplibre-gl.js"></script>
+<script src="vendor/deck.gl.min.js"></script>
+<script src="app.js?v=20261115p"></script>
+<script src="heartbeat.js?v=20261115p"></script>
+</body>
+</html>

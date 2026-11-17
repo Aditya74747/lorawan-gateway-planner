@@ -1,0 +1,19 @@
+# Stuttgart – the planner on a whole city without operator data (≈ 96,000 addresses, 20 × 20 km).
+# Everything not set here comes from ../../config.yaml (and the city defaults in src/hnplan/city.py).
+city:
+  name: Stuttgart
+  municipalities: [Stuttgart]   # only these Hauskoordinaten "gmd" values count as meters (tiles reach into
+                                # Esslingen, Fellbach, Kornwestheim, Leinfelden-Echterdingen …)
+
+grid:
+  cell_size_m: 100      # 100 m planning cells (Heilbronn: 50 m) – keeps the browser matrix at ~10k cells x ~300 sites
+
+candidates:
+  spacing_m: 800        # one proposed rooftop per 800 m x 800 m square that has addresses (Stuttgart Mitte demo: 400 m)
+  min_roof_m: 6         # roofs lower than this are not considered
+  min_footprint_m2: 60
+  min_addresses: 5      # squares with fewer addresses get no site
+  prefix: S             # site ids S001, S002, …
+
+radio:
+  max_range_m: 3000     # links longer than this count as "no reception" (measured: 1–2 km already only 17 %)

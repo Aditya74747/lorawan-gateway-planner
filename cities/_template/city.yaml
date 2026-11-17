@@ -1,0 +1,15 @@
+# Template – copy this folder to cities/<your_city>/ and adjust.
+# Everything not set here comes from ../../config.yaml (and the city defaults in src/hnplan/city.py).
+city:
+  name: My City
+  municipalities: null         # only these Hauskoordinaten "gmd" values count as meters (tiles may reach into neighbours)
+
+candidates:
+  spacing_m: 400        # one proposed rooftop per 400 m x 400 m square that has addresses
+  min_roof_m: 6         # roofs lower than this are not considered
+  min_footprint_m2: 60
+  min_addresses: 5      # squares with fewer addresses get no site
+  prefix: S             # site ids S001, S002, …
+
+radio:
+  max_range_m: 4000     # links longer than this count as "no reception" (measured: 1–2 km already only 17 %)

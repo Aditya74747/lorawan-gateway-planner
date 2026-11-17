@@ -1,0 +1,42 @@
+[project]
+name = "hnplan"
+version = "0.1.0"
+description = "LoRaWAN first-advisor: predict reception and plan gateway sites for Heilbronn (Future City Hackathon 2026)"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "catboost>=1.2.10",
+    "fastapi>=0.162.7",
+    "geopandas>=1.2.0",
+    "lxml>=6.1.3",
+    "numpy>=2.5.4",
+    "pandas>=3.1.1",
+    "pillow>=11.0",
+    "pyarrow>=26.0.1",
+    "pyogrio>=0.13.0",
+    "pypdf>=7.1.0",
+    "pyproj>=3.8.0",
+    "pyyaml>=6.0.3",
+    "rasterio>=1.5.2",
+    "requests>=2.34.2",
+    "scikit-learn>=1.9.1",
+    "scipy>=1.18.1",
+    "shapely>=2.2.0",
+    "uvicorn[standard]>=0.54.0",
+]
+
+[project.scripts]
+hnplan = "hnplan.cli:main"
+
+[build-system]
+requires = ["uv_build>=0.11.32,<0.12.0"]
+build-backend = "uv_build"
+
+[dependency-groups]
+bench = [
+    "lightgbm>=4.7.0",
+    "xgboost>=3.4.1",
+]
+dev = [
+    "pytest>=9.2.0",
+]
