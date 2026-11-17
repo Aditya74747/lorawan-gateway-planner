@@ -15,6 +15,8 @@ A 3D digital twin of Heilbronn that learns from real radio data and finds the fe
 ![CatBoost](https://img.shields.io/badge/Model-CatBoost-FFCC00)
 ![deck.gl](https://img.shields.io/badge/3D-deck.gl_%2B_MapLibre-2BB673)
 ![FastAPI](https://img.shields.io/badge/API-FastAPI-009688?logo=fastapi&logoColor=white)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+[![Open data](https://img.shields.io/badge/Geodata-LGL_BW_·_dl--de%2Fby--2--0-6B7280)](NOTICE.md)
 
 **Team Odyssey** · Aditya · Ayesha · Harsha · Kush
 
@@ -35,7 +37,8 @@ https://github.com/user-attachments/assets/f3542c76-2afe-4cbf-9deb-2434fc6b096e
 
 -->
 
-<sub>Quick preview at 4× speed · ▶ <a href="docs/media/demo.mp4"><b>Open the video file</b></a> · 🌐 <a href="https://lorawan-gateway-planner.netlify.app/"><b>Try the live planner</b></a></sub>
+<sub>▶ <a href="docs/media/demo.mp4"><b>Open the video file</b></a> · 🌐 <a href="https://lorawan-gateway-planner.netlify.app/"><b>Try the live planner</b></a><br>
+Geodata © LGL Baden-Württemberg (dl-de/by-2-0) · Basemap © CARTO © OpenStreetMap contributors</sub>
 
 
 
@@ -74,6 +77,8 @@ so that as few antennas as possible still hear almost every meter?
 <td width="50%"><img src="docs/media/hook_plan.jpg" alt="Heilbronn with the 27 planned gateways: the city is green"><br><b>With 27 of the 71 sites</b>: 98 % of meters heard</td>
 </tr>
 </table>
+
+<sub>All map images on this page: Geodata © LGL Baden-Württemberg (dl-de/by-2-0) · Basemap © CARTO © OpenStreetMap contributors · Results from our model trained on HNVG measurements.</sub>
 
 <div align="center">
 
@@ -225,14 +230,33 @@ How to add a city: **[cities/README.md](cities/README.md)**.
 | `uv run --group bench hnplan benchmark` | compare the 13 learners |
 | `uv run pytest -q` | tests |
 
-### Data used
+---
 
-| Data | Source | Used for |
-|---|---|---|
-| Radio receptions, meter + gateway metadata, 71 candidate sites | HNVG (challenge data, **not included**) | training labels, planning targets |
-| LoD1/LoD2 3D buildings, DOM1 surface, DGM1 terrain, DOP20 orthophotos, ALKIS, Basis-DLM, house coordinates | [LGL Open GeoData](https://www.lgl-bw.de/Produkte/Open-Data/) | line of sight, heights, trees, addresses |
-| XPlanung land-use and regional plans | [Geoportal Raumordnung BW](https://www.geoportal-raumordnung-bw.de/) | future city |
-| Weather (optional) | [Open-Meteo](https://open-meteo.com/) | weather vs reception |
+## 📚 Data sources and licences
+
+Everything we used is either **official open data** or **challenge data provided by HNVG**. **No raw data is
+stored in this repository.** You download the open data yourself from the official portals. The full list, with
+every library and its licence, is in **[NOTICE.md](NOTICE.md)**.
+
+| Data | Owner / source | Licence | Used for |
+|---|---|---|---|
+| 3D buildings LoD1 / LoD2 | [LGL Open GeoData](https://www.lgl-bw.de/Produkte/Open-Data/) | [dl-de/by-2-0](https://www.govdata.de/dl-de/by-2-0) | building heights, obstacles on every radio path |
+| DOM1 surface model, 1 m | LGL Open GeoData | dl-de/by-2-0 | line of sight incl. trees, antenna heights |
+| DGM1 terrain model, 1 m | LGL Open GeoData | dl-de/by-2-0 | ground height, hills |
+| DOP20 orthophotos (RGB + infrared) | LGL Open GeoData | dl-de/by-2-0 | tree canopy (NDVI) |
+| ALKIS buildings and land use | LGL Open GeoData | dl-de/by-2-0 | geocoding fallback, forest, still-unbuilt land |
+| Basis-DLM (forest, water) | LGL Open GeoData | dl-de/by-2-0 | forest and water beyond the city |
+| House coordinates (Hauskoordinaten) | LGL Open GeoData | dl-de/by-2-0 | every address = one water meter |
+| Land-use and regional plans (XPlanGML) | [Geoportal Raumordnung BW](https://www.geoportal-raumordnung-bw.de/) | free download from the State of Baden-Württemberg (see [NOTICE.md](NOTICE.md)) | future city: planned districts |
+| Historical weather (optional) | [Open-Meteo.com](https://open-meteo.com/) | [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) | weather vs reception |
+| Radio receptions, meter and gateway metadata, 71 candidate sites | HNVG, for the Future City Hackathon 2026 | © HNVG, **not open data, not included** | training labels, planning targets |
+| Basemap (in the app) | [CARTO](https://carto.com/basemaps/) / [OpenStreetMap](https://www.openstreetmap.org/copyright) | CARTO terms / ODbL | background map |
+
+**Attribution, required by dl-de/by-2-0:** Geodata © Landesamt für Geoinformation und Landentwicklung
+Baden-Württemberg ([www.lgl-bw.de](https://www.lgl-bw.de)), Datenlizenz Deutschland – Namensnennung – Version 2.0. We
+processed the data into a 5 m raster, line-of-sight features and model predictions.
+
+The gateway hardware values in `config.yaml` come from the public Kerlink datasheet only.
 
 ---
 
@@ -258,6 +282,12 @@ docs/media/        demo video and images for this README
 * "Coverage" means coverage for a meter deep indoors, in a basement. Street-level sensors will do better.
 * Building plans say what *may* be built, not when. New buildings use a worst-case height.
 
+## 📄 License
+
+The code in this repository is released under the **[MIT License](LICENSE)** © 2026 Team Odyssey.
+Third-party libraries (deck.gl: MIT, MapLibre GL JS: BSD-3, and the Python packages), fonts, map tiles and
+datasets keep their own licences. See **[NOTICE.md](NOTICE.md)**.
+
 ---
 
 <div align="center">
@@ -265,6 +295,6 @@ docs/media/        demo video and images for this README
 Built in Heilbronn for the **Future City Hackathon 2026** by **Team Odyssey**<br>
 Aditya · Ayesha · Harsha · Kush
 
-<sub>Geodata © LGL Baden-Württemberg (Datenlizenz Deutschland – Namensnennung 2.0). Radio data © HNVG, not included in this repository.</sub>
+<sub>Code: MIT License · Geodata © LGL Baden-Württemberg (dl-de/by-2-0) · Basemap © CARTO © OpenStreetMap contributors · Radio data © HNVG, not included in this repository.</sub>
 
 </div>

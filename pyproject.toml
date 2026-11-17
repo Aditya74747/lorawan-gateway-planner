@@ -4,6 +4,8 @@ version = "0.1.0"
 description = "LoRaWAN first-advisor: predict reception and plan gateway sites for Heilbronn (Future City Hackathon 2026)"
 readme = "README.md"
 requires-python = ">=3.12"
+license = "MIT"
+license-files = ["LICENSE"]
 dependencies = [
     "catboost>=1.2.10",
     "fastapi>=0.162.7",
