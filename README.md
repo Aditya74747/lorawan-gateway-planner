@@ -31,9 +31,13 @@ https://github.com/user-attachments/assets/f3542c76-2afe-4cbf-9deb-2434fc6b096e
 
 <div align="center">
 
-<a href="docs/media/demo.mp4"><img src="docs/media/demo.gif" alt="Demo: Heilbronn turns from red to green with 27 gateways, backup when one fails, the future city, and Stuttgart" width="100%"></a>
+<!-- <a href="docs/media/demo.mp4"><img src="docs/media/demo.gif" alt="Demo: Heilbronn turns from red to green with 27 gateways, backup when one fails, the future city, and Stuttgart" width="100%"></a>
+
+-->
 
 <sub>Quick preview at 4× speed · ▶ <a href="docs/media/demo.mp4"><b>Open the video file</b></a> · 🌐 <a href="https://lorawan-gateway-planner.netlify.app/"><b>Try the live planner</b></a></sub>
+
+
 
 </div>
 
