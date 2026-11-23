@@ -6,7 +6,7 @@
 
 **Where should a city put the antennas that read its water meters by radio?**<br>
 A 3D digital twin of Heilbronn that learns from real radio data and finds the fewest gateway sites that still hear (almost) every meter.
-
+ 
 [![Live demo](https://img.shields.io/badge/▶_Live_demo-lorawan--gateway--planner.netlify.app-2F7BEF?style=for-the-badge)](https://lorawan-gateway-planner.netlify.app/)
 
 ![Future City Hackathon 2026](https://img.shields.io/badge/Future_City_Hackathon-2026-F5A524)
